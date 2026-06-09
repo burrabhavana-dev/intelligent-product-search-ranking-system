@@ -44,6 +44,7 @@ def search_products_v2(
         [
             "title",
             "brand",
+            "category",
             "average_rating",
             "num_ratings",
             "similarity_score",

@@ -18,35 +18,33 @@ if st.button("Search"):
 
     response = requests.post(
         "http://127.0.0.1:8000/search",
-        json={
-            "query": query
-        }
+        json={"query": query}
     )
 
-    results = response.json()["results"]
+    data = response.json()
 
-    st.subheader("Results")
+    results = data["results"]
 
-    for product in results:
+    st.subheader(f"Results ({len(results)})")
 
-        st.write("---")
+    for idx, product in enumerate(results, start=1):
 
-        st.write(
-            f"### {product['title']}"
-        )
+        st.markdown("---")
 
-        st.write(
-            f"Brand: {product['brand']}"
-        )
+        st.markdown(
+            f"""
+### 🏆 Rank #{idx}
 
-        st.write(
-            f"Rating: {product['average_rating']}"
-        )
+## {product['title']}
 
-        st.write(
-            f"Reviews: {product['num_ratings']}"
-        )
+🏷 **Brand:** {product['brand']}
 
-        st.write(
-            f"Final Score: {round(product['final_score'], 4)}"
+📦 **Category:** {product['category']}
+
+⭐ **Rating:** {product['average_rating']}
+
+👥 **Reviews:** {product['num_ratings']}
+
+🎯 **Score:** {round(product['final_score'],4)}
+"""
         )
