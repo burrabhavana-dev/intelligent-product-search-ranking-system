@@ -36,7 +36,34 @@ CATEGORY_SYNONYMS = {
         "smartwatch"
     ]
 }
+BRAND_ALIASES = {
+    # Apple
+    "iphone": "Apple",
+    "ipad": "Apple",
+    "macbook": "Apple",
+    "airpods": "Apple",
 
+    # Samsung
+    "galaxy": "Samsung",
+
+    # HP
+    "victus": "HP",
+
+    # Lenovo
+    "thinkpad": "Lenovo",
+
+    # Dell
+    "inspiron": "Dell",
+    "xps": "Dell",
+
+    # Asus
+    "rog": "Asus",
+    "zenbook": "Asus",
+
+    # Acer
+    "aspire": "Acer",
+    "predator": "Acer"
+}
 
 def get_brands(df):
     """
@@ -56,9 +83,21 @@ def get_brands(df):
 def extract_brand(query, brands):
     """
     Extract brand from query.
+    Supports aliases like:
+    iphone -> Apple
+    galaxy -> Samsung
     """
 
     query = query.lower()
+
+    # Alias Matching First
+
+    for alias, brand in BRAND_ALIASES.items():
+
+        if alias in query:
+            return brand
+
+    # Direct Brand Matching
 
     for brand in brands:
 
@@ -66,7 +105,6 @@ def extract_brand(query, brands):
             return brand
 
     return None
-
 
 def extract_category(query):
     """

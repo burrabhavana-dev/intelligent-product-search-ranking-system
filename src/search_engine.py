@@ -1,5 +1,4 @@
 import numpy as np
-
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -11,8 +10,6 @@ from src.query_parser import (
 from src.semantic_search import (
     get_semantic_scores
 )
-
-
 
 from src.query_parser import (
     get_brands,
