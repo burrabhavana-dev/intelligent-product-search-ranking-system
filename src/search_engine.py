@@ -1,5 +1,18 @@
 import numpy as np
+
+from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+
+from src.query_parser import (
+    get_brands,
+    parse_query
+)
+
+from src.semantic_search import (
+    get_semantic_scores
+)
+
+
 
 from src.query_parser import (
     get_brands,
@@ -172,6 +185,171 @@ def search_products_v3(
             "average_rating",
             "num_ratings",
             "similarity_score",
+            "final_score"
+        ]
+    ].head(top_n)
+
+    output = output.replace(
+        [np.inf, -np.inf],
+        0
+    )
+
+    output = output.fillna("")
+
+    return output.to_dict(
+        orient="records"
+    )
+
+def search_products_v5(
+    query,
+    vectorizer,
+    tfidf_matrix,
+    product_embeddings,
+    model,
+    df,
+    clean_text,
+    top_n=10
+):
+
+    brands = get_brands(df)
+
+    parsed = parse_query(
+        query,
+        brands
+    )
+
+    working_df = df.copy()
+
+    # Brand Filter
+
+    if parsed["brand"]:
+
+        working_df = working_df[
+            working_df["title"]
+            .str.contains(
+                parsed["brand"],
+                case=False,
+                na=False
+            )
+        ]
+
+    # Category Filter
+
+    if parsed["category"]:
+
+        working_df = working_df[
+            working_df["category"]
+            .str.lower()
+            ==
+            parsed["category"].lower()
+        ]
+
+    # Fallback
+
+    if len(working_df) == 0:
+
+        working_df = df.copy()
+
+    candidate_indices = working_df.index.tolist()
+
+    # ------------------------
+    # TF-IDF Score
+    # ------------------------
+
+    query_clean = clean_text(query)
+
+    query_vector = vectorizer.transform(
+        [query_clean]
+    )
+
+    tfidf_scores = cosine_similarity(
+        query_vector,
+        tfidf_matrix
+    ).flatten()
+
+    # ------------------------
+    # Semantic Score
+    # ------------------------
+
+    query_embedding = model.encode(
+        [query]
+    )
+
+    candidate_embeddings = (
+        product_embeddings[
+            candidate_indices
+        ]
+    )
+
+    semantic_scores = get_semantic_scores(
+        query_embedding,
+        candidate_embeddings
+    )
+
+    # ------------------------
+    # Build Candidate DF
+    # ------------------------
+
+    candidate_df = working_df.copy()
+
+    candidate_df["tfidf_score"] = (
+        tfidf_scores[
+            candidate_indices
+        ]
+    )
+
+    candidate_df["semantic_score"] = (
+        semantic_scores
+    )
+
+    # ------------------------
+    # Ranking Features
+    # ------------------------
+
+    candidate_df["rating_score"] = (
+        candidate_df["average_rating"]
+        .fillna(0)
+        / 5
+    )
+
+    candidate_df["popularity_score"] = (
+        np.log1p(
+            candidate_df["num_ratings"]
+            .fillna(0)
+        )
+    )
+
+    candidate_df["popularity_score"] = (
+        candidate_df["popularity_score"]
+        /
+        candidate_df["popularity_score"].max()
+    )
+
+    # ------------------------
+    # Final Hybrid Score
+    # ------------------------
+
+    candidate_df["final_score"] = (
+        0.55 * candidate_df["semantic_score"]
+        + 0.25 * candidate_df["tfidf_score"]
+        + 0.15 * candidate_df["rating_score"]
+        + 0.05 * candidate_df["popularity_score"]
+    )
+
+    results = candidate_df.sort_values(
+        "final_score",
+        ascending=False
+    )
+
+    output = results[
+        [
+            "title",
+            "brand",
+            "category",
+            "average_rating",
+            "num_ratings",
+            "semantic_score",
+            "tfidf_score",
             "final_score"
         ]
     ].head(top_n)
