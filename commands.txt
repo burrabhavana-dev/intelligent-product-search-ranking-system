@@ -1,0 +1,43 @@
+*to start venv
+
+python -m venv venv
+venv\Scripts\activate
+
+
+
+
+*to find which evnvironment does it using?
+
+where python
+python -c "import sys; print(sys.executable)"
+
+
+
+
+*to change the environment from local to our project builtin envi
+
+venv\Scripts\activate
+python -c "import numpy; print(numpy.__version__)"
+uvicorn api.app:app --reload
+
+
+*to install streamlit
+
+python -m pip install streamlit requests
+streamlit --version
+
+
+
+
+*to run streamlit
+
+streamlit run ui\streamlit_app.py
+
+
+
+*now in version 3- we are going for sentence transformers
+
+to install sentence transformers
+pip install sentence-transformers
+
+

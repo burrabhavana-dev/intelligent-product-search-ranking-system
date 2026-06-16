@@ -15,6 +15,9 @@ from src.query_parser import (
     get_brands,
     parse_query
 )
+from src.explainability import (
+    generate_explanation
+)
 
 def search_products_v2(
     query,
@@ -338,6 +341,19 @@ def search_products_v5(
         ascending=False
     )
 
+    explanations = []
+
+    for _, row in results.iterrows():
+
+        explanations.append(
+            generate_explanation(
+                row,
+                parsed
+            )
+    )
+
+    results["explanation"] = explanations
+
     output = results[
         [
             "title",
@@ -347,7 +363,8 @@ def search_products_v5(
             "num_ratings",
             "semantic_score",
             "tfidf_score",
-            "final_score"
+            "final_score",
+            "explanation"
         ]
     ].head(top_n)
 

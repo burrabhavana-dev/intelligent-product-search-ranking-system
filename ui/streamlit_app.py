@@ -21,6 +21,7 @@ if st.button("Search"):
         json={"query": query}
     )
 
+
     data = response.json()
 
     results = data["results"]
