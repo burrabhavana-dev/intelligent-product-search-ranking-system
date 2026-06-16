@@ -34,18 +34,26 @@ if st.button("Search"):
 
         st.markdown(
             f"""
-### 🏆 Rank #{idx}
+        ### 🏆 Rank #{idx}
 
-## {product['title']}
+        ## {product['title']}
 
-🏷 **Brand:** {product['brand']}
+        🏷 **Brand:** {product['brand']}
 
-📦 **Category:** {product['category']}
+        📦 **Category:** {product['category']}
 
-⭐ **Rating:** {product['average_rating']}
+        ⭐ **Rating:** {product['average_rating']}
 
-👥 **Reviews:** {product['num_ratings']}
+        👥 **Reviews:** {product['num_ratings']}
 
-🎯 **Score:** {round(product['final_score'],4)}
-"""
+        🎯 **Score:** {round(product['final_score'],4)}
+        """
         )
+
+        if "explanation" in product:
+
+            st.markdown("### 🧠 Why this result?")
+
+            for reason in product["explanation"]:
+
+                st.markdown(f"✅ {reason}")
